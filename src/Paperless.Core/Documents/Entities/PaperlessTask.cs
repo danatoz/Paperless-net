@@ -1,3 +1,6 @@
+using Paperless.Core.Documents.Enums;
+using TaskStatus = Paperless.Core.Documents.Enums.TaskStatus;
+
 namespace Paperless.Core.Documents.Entities;
 
 /// <summary>
@@ -36,22 +39,4 @@ public class PaperlessTask : BaseEntity
     /// Contains output such as document IDs, error messages, etc.
     /// </summary>
     public string? Result { get; set; }
-
-    /// <summary>
-    /// Enumeration of possible task statuses.
-    /// </summary>
-    public enum TaskStatus
-    {
-        /// <summary>The task is queued and waiting to start.</summary>
-        Pending = 0,
-
-        /// <summary>The task has started execution.</summary>
-        Started = 1,
-
-        /// <summary>The task completed successfully.</summary>
-        Complete = 2,
-
-        /// <summary>The task failed during execution.</summary>
-        Failed = 3,
-    }
 }
