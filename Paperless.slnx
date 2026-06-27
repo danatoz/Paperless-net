@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/">
+    <File Path="ARCHITECTURE.md" />
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+    <File Path="Paperless.slnx" />
+    <File Path="README.md" />
+    <File Path="TASKS.md" />
+    <Project Path="src/Paperless.AI/Paperless.AI.csproj" />
+    <Project Path="src/Paperless.Api/Paperless.Api.csproj" />
+    <Project Path="src/Paperless.Core/Paperless.Core.csproj" />
+    <Project Path="src/Paperless.Infrastructure/Paperless.Infrastructure.csproj" />
+    <Project Path="src/Paperless.Mail/Paperless.Mail.csproj" />
+    <Project Path="src/Paperless.Shared/Paperless.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Paperless.AI.Tests/Paperless.AI.Tests.csproj" />
+    <Project Path="tests/Paperless.Api.Tests/Paperless.Api.Tests.csproj" />
+    <Project Path="tests/Paperless.Core.Tests/Paperless.Core.Tests.csproj" />
+    <Project Path="tests/Paperless.Infrastructure.Tests/Paperless.Infrastructure.Tests.csproj" />
+    <Project Path="tests/Paperless.Shared.Tests/Paperless.Shared.Tests.csproj" />
+  </Folder>
+</Solution>
