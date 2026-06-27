@@ -1,4 +1,5 @@
 using Paperless.Core.Documents.Entities;
+using Paperless.Core.Documents.Enums;
 
 namespace Paperless.Core.Workflows.Entities;
 
@@ -11,7 +12,7 @@ public class WorkflowAction : BaseEntity
     /// <summary>
     /// The type of action to perform.
     /// </summary>
-    public ActionType Type { get; set; }
+    public WorkflowActionType Type { get; set; }
 
     /// <summary>
     /// The execution order of this action within the workflow.
@@ -34,25 +35,4 @@ public class WorkflowAction : BaseEntity
     /// webhook URL and payload, title template, etc.
     /// </summary>
     public string? ActionParameters { get; set; }
-
-    /// <summary>
-    /// The type of action to execute.
-    /// </summary>
-    public enum ActionType
-    {
-        /// <summary>Assign a correspondent to the document.</summary>
-        SetCorrespondent = 1,
-
-        /// <summary>Assign a tag to the document.</summary>
-        SetTag = 2,
-
-        /// <summary>Assign a document type to the document.</summary>
-        SetDocumentType = 3,
-
-        /// <summary>Assign a storage path to the document.</summary>
-        SetStoragePath = 4,
-
-        /// <summary>Send a webhook notification.</summary>
-        Webhook = 5,
-    }
 }

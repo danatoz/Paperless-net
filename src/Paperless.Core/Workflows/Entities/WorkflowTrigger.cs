@@ -1,4 +1,5 @@
 using Paperless.Core.Documents.Entities;
+using Paperless.Core.Documents.Enums;
 
 namespace Paperless.Core.Workflows.Entities;
 
@@ -11,7 +12,7 @@ public class WorkflowTrigger : BaseEntity
     /// <summary>
     /// The type of event that triggers this workflow.
     /// </summary>
-    public TriggerType Type { get; set; }
+    public WorkflowTriggerType Type { get; set; }
 
     /// <summary>
     /// Foreign key to the parent <see cref="Workflow"/>.
@@ -80,19 +81,4 @@ public class WorkflowTrigger : BaseEntity
     /// The interval in days between recurring scheduled triggers.
     /// </summary>
     public int? ScheduleRecurringIntervalDays { get; set; }
-
-    /// <summary>
-    /// The type of trigger event.
-    /// </summary>
-    public enum TriggerType
-    {
-        /// <summary>Triggered when document consumption starts.</summary>
-        Consumption = 1,
-
-        /// <summary>Triggered when a document is added to the system.</summary>
-        DocumentAdded = 2,
-
-        /// <summary>Triggered when a document is updated.</summary>
-        DocumentUpdated = 3,
-    }
 }

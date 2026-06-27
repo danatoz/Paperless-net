@@ -1,0 +1,54 @@
+# CI pipeline: build and test the .NET solution
+# Triggered on pushes and pull requests to the main branch.
+# Runs on ubuntu-latest with .NET 10 SDK.
+
+name: .NET Build & Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.slnx'
+      - 'Directory.Build.props'
+      - '.github/workflows/dotnet-build-test.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.slnx'
+      - 'Directory.Build.props'
+      - '.github/workflows/dotnet-build-test.yml'
+
+jobs:
+  build-and-test:
+    name: Build & Test (Release)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore Paperless.slnx
+
+      - name: Build (Release)
+        run: dotnet build Paperless.slnx --no-restore -c Release
+
+      - name: Run tests
+        run: dotnet test Paperless.slnx --no-build -c Release --logger "console;verbosity=normal"
+
+      - name: Upload test results (if any)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/**'
+          retention-days: 7

@@ -8,6 +8,9 @@ namespace Paperless.Core.Documents.Enums;
 /// </summary>
 public enum MatchingAlgorithm
 {
+    /// <summary>No matching (always matches or manual assignment only).</summary>
+    None = 0,
+
     /// <summary>Match if any of the terms appear (logical OR).</summary>
     Any = 1,
 
