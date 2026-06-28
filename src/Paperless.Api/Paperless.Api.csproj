@@ -3,10 +3,16 @@
   <PropertyGroup>
     <!-- .NET 10 preview workaround for ASP.NET Core shared framework -->
     <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+    <NoWarn>NU1903</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Paperless.Infrastructure\Paperless.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
