@@ -28,7 +28,9 @@
 
   <ItemGroup>
     <!-- Required for HttpContextAccessor used by AuditInterceptor in RepositoryTestsBase -->
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App">
+      <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+    </FrameworkReference>
   </ItemGroup>
 
   <ItemGroup>
