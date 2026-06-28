@@ -1,0 +1,15 @@
+using Paperless.Core.Common.Interfaces;
+using Paperless.Core.Documents.Entities;
+using Paperless.Infrastructure.Persistence;
+
+namespace Paperless.Infrastructure.Persistence.Repositories;
+
+/// <summary>
+/// Repository for Correspondent entity operations.
+/// </summary>
+public class CorrespondentRepository : RepositoryBase<Correspondent>, ICorrespondentRepository
+{
+    public CorrespondentRepository(AppDbContext dbContext) : base(dbContext)
+    {
+    }
+}

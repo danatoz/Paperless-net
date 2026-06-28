@@ -1,3 +1,5 @@
+using Paperless.Core.Common.Models;
+using Paperless.Core.Common.Specifications;
 using Paperless.Core.Documents.Entities;
 
 namespace Paperless.Core.Common.Interfaces;
@@ -19,9 +21,20 @@ public interface IDocumentRepository
     Task<IReadOnlyCollection<Document>> GetAllAsync(CancellationToken ct = default);
 
     /// <summary>
+    /// Retrieves a paginated, filtered, and sorted list of documents
+    /// using a specification.
+    /// </summary>
+    Task<PagedResult<Document>> GetAllAsync(ISpecification<Document> spec, CancellationToken ct = default);
+
+    /// <summary>
     /// Searches documents by title, content, or metadata.
     /// </summary>
     Task<IReadOnlyCollection<Document>> SearchAsync(string query, CancellationToken ct = default);
+
+    /// <summary>
+    /// Searches documents by content with pagination and sorting via specification.
+    /// </summary>
+    Task<PagedResult<Document>> SearchAsync(string query, ISpecification<Document> spec, CancellationToken ct = default);
 
     /// <summary>
     /// Adds a new document to the repository.
@@ -52,4 +65,16 @@ public interface IDocumentRepository
     /// Finds a document by its SHA-256 checksum (for deduplication).
     /// </summary>
     Task<Document?> GetByChecksumAsync(string checksum, CancellationToken ct = default);
+
+    /// <summary>
+    /// Performs a bulk update on documents matching the given specification.
+    /// Uses EF Core ExecuteUpdate for efficiency.
+    /// </summary>
+    Task<int> BulkUpdateAsync(ISpecification<Document> spec, Action<Document> updateAction, CancellationToken ct = default);
+
+    /// <summary>
+    /// Performs a bulk soft-delete on documents matching the given specification.
+    /// Uses EF Core ExecuteDelete for efficiency.
+    /// </summary>
+    Task<int> BulkDeleteAsync(ISpecification<Document> spec, CancellationToken ct = default);
 }
