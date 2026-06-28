@@ -10,7 +10,7 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 /// </summary>
 public class SavedViewRepository : RepositoryBase<SavedView>, ISavedViewRepository
 {
-    public SavedViewRepository(AppDbContext dbContext) : base(dbContext)
+    public SavedViewRepository(AppDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork)
     {
     }
 

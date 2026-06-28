@@ -11,7 +11,7 @@ public class WorkflowRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new WorkflowRepository(context);
+        var repo = new WorkflowRepository(context, CreateUnitOfWorkMock());
 
         var workflow = new Workflow
         {
@@ -48,7 +48,7 @@ public class WorkflowRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new WorkflowRepository(context);
+        var repo = new WorkflowRepository(context, CreateUnitOfWorkMock());
 
         var workflow = new Workflow
         {
@@ -89,7 +89,7 @@ public class WorkflowRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new WorkflowRepository(context);
+        var repo = new WorkflowRepository(context, CreateUnitOfWorkMock());
 
         context.Workflows.AddRange(
             new Workflow { Name = "Wf B", Order = 2, Enabled = true },

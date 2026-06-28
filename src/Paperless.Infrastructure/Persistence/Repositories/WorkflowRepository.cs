@@ -10,7 +10,7 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 /// </summary>
 public class WorkflowRepository : RepositoryBase<Workflow>, IWorkflowRepository
 {
-    public WorkflowRepository(AppDbContext dbContext) : base(dbContext)
+    public WorkflowRepository(AppDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork)
     {
     }
 

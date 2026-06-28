@@ -11,7 +11,7 @@ public class SavedViewRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new SavedViewRepository(context);
+        var repo = new SavedViewRepository(context, CreateUnitOfWorkMock());
 
         var view = new SavedView
         {
@@ -39,7 +39,7 @@ public class SavedViewRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new SavedViewRepository(context);
+        var repo = new SavedViewRepository(context, CreateUnitOfWorkMock());
 
         context.SavedViews.AddRange(
             new SavedView { Name = "Dashboard View 1", ShowInDashboard = true, ShowInSidebar = false },
@@ -62,7 +62,7 @@ public class SavedViewRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new SavedViewRepository(context);
+        var repo = new SavedViewRepository(context, CreateUnitOfWorkMock());
 
         context.SavedViews.AddRange(
             new SavedView { Name = "Dashboard Only", ShowInDashboard = true, ShowInSidebar = false },

@@ -9,7 +9,7 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 /// </summary>
 public class TagRepository : RepositoryBase<Tag>, ITagRepository
 {
-    public TagRepository(AppDbContext dbContext) : base(dbContext)
+    public TagRepository(AppDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork)
     {
     }
 }

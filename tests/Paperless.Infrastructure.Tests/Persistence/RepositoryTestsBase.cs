@@ -1,7 +1,11 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using NSubstitute;
+using Paperless.Core.Common.Interfaces;
 using Paperless.Infrastructure.Persistence;
+using Paperless.Infrastructure.Persistence.Interceptors;
 
 namespace Paperless.Infrastructure.Tests.Persistence;
 
@@ -11,9 +15,15 @@ namespace Paperless.Infrastructure.Tests.Persistence;
 /// </summary>
 public abstract class RepositoryTestsBase : IDisposable
 {
+    /// <summary>
+    /// Creates a mock <see cref="IUnitOfWork"/> for use in tests.
+    /// </summary>
+    protected static IUnitOfWork CreateUnitOfWorkMock() => Substitute.For<IUnitOfWork>();
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<AppDbContext> _options;
     private readonly IOptions<DatabaseOptions> _dbOptions;
+    private readonly SoftDeleteInterceptor _softDeleteInterceptor;
+    private readonly AuditInterceptor _auditInterceptor;
 
     protected RepositoryTestsBase()
     {
@@ -31,6 +41,12 @@ public abstract class RepositoryTestsBase : IDisposable
             ConnectionString = "DataSource=:memory:"
         });
 
+        // Create interceptors for testing.
+        // SoftDeleteInterceptor requires no dependencies.
+        // AuditInterceptor gracefully handles missing IHttpContextAccessor.
+        _softDeleteInterceptor = new SoftDeleteInterceptor();
+        _auditInterceptor = new AuditInterceptor(new HttpContextAccessor());
+
         // Create the schema
         using var context = CreateContext();
         context.Database.EnsureCreated();
@@ -38,7 +54,11 @@ public abstract class RepositoryTestsBase : IDisposable
 
     protected AppDbContext CreateContext()
     {
-        var context = new AppDbContext(_options, _dbOptions);
+        var context = new AppDbContext(
+            _options,
+            _dbOptions,
+            _softDeleteInterceptor,
+            _auditInterceptor);
         return context;
     }
 
