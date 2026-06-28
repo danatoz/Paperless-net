@@ -1,3 +1,5 @@
+using Paperless.Core.Common.Models;
+using Paperless.Core.Common.Specifications;
 using Paperless.Core.Documents.Entities;
 
 namespace Paperless.Core.Common.Interfaces;
@@ -11,6 +13,12 @@ public interface IDocumentTypeRepository
     /// Gets a document type by its unique identifier.
     /// </summary>
     Task<DocumentType?> GetByIdAsync(int id, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves a paginated, filtered, and sorted list of document types
+    /// using a specification.
+    /// </summary>
+    Task<PagedResult<DocumentType>> GetAllAsync(ISpecification<DocumentType> spec, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves all document types.

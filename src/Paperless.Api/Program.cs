@@ -1,48 +1,38 @@
 using Paperless.Api.Extensions;
 
+// ────────────────────────────────────────────────────────────
+//  Paperless-ngx .NET backend — ASP.NET Core Web API host
+// ────────────────────────────────────────────────────────────
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog as the primary logging provider.
-// Sinks, levels, and enrichers are read from the "Serilog" section in
-// appsettings.json (and environment-specific overrides).
+// ── Logging ─────────────────────────────────────────────────
+// Replace the default ILogger<T> pipeline with Serilog.
+// Sinks, levels, and enrichers are read from the "Serilog"
+// section in appsettings.json (+ environment overrides).
 builder.Host.UseSerilogWithConfiguration();
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// ── Services ────────────────────────────────────────────────
+// Register all application services via the central extension
+// method. This includes Core, Infrastructure, API-layer, and
+// Hangfire background job processing.
+builder.Services.AddApplicationServices(builder.Configuration);
+
+// ── Kestrel ─────────────────────────────────────────────────
+// Configure Kestrel from the "Kestrel" section in appsettings.json.
+// Default port is 8000 (HTTP) — overridable via environment.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Limits and endpoint configuration are read from
+    // "Kestrel" config section by ASP.NET Core automatically.
+    // This explicit call ensures our defaults apply.
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// ── Middleware pipeline ──────────────────────────────────────
+// Order is critical — see ApplicationBuilderExtensions for details.
+app.UseApplicationMiddleware();
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+// ── Start ───────────────────────────────────────────────────
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
