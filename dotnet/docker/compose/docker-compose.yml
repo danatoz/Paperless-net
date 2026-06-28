@@ -1,0 +1,213 @@
+# Docker Compose for Paperless .NET stack
+#
+# This file replaces the original paperless-ngx Python/Django stack with:
+#   - ASP.NET Core Web API (replaces Django + DRF)
+#   - Hangfire (replaces Celery + Flower)
+#   - PostgreSQL (recommended — supports Hangfire + pgvector)
+#   - Redis (cache + Hangfire backplane)
+#   - Gotenberg (PDF conversion)
+#   - Apache Tika (text extraction)
+#
+# Usage:
+#   docker compose -f dotnet/docker/compose/docker-compose.yml up -d
+#
+# Or from the repo root:
+#   docker compose up   (if root docker-compose.yml is updated)
+#
+# ── Services ────────────────────────────────────────────────────────
+#   paperless-api  : ASP.NET Core Web API on port 8000
+#   db             : PostgreSQL 16
+#   redis          : Redis 7 (Alpine)
+#   gotenberg      : Gotenberg 8 (PDF conversion)
+#   tika           : Apache Tika 3 (text extraction)
+#
+# ── Volumes ─────────────────────────────────────────────────────────
+#   data      : Document files (originals, archive, thumbnails, previews)
+#   media     : Uploaded media / temporary files
+#   pgdata    : PostgreSQL database files
+#   redisdata : Redis persistence
+# ────────────────────────────────────────────────────────────────────
+
+services:
+  # ──────────────────────────────────────────────────────────────────
+  # paperless-api — ASP.NET Core Web API
+  # Replaces: Django webserver (Granian ASGI) + Celery Worker
+  # Ports:    8000 (HTTP API)
+  # ──────────────────────────────────────────────────────────────────
+  paperless-api:
+    image: paperless-api:latest
+    build:
+      context: ../../..
+      dockerfile: dotnet/Dockerfile
+    container_name: paperless-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      gotenberg:
+        condition: service_healthy
+      tika:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      # Document file storage (originals, archive, thumbnails, previews)
+      - data:/app/data
+      # Uploaded / temporary media
+      - media:/app/media
+    environment:
+      # ── ASP.NET Core ──────────────────────────────────────────
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8000
+
+      # ── Database (EF Core) ────────────────────────────────────
+      # Section: Database
+      - Database__Provider=PostgreSQL
+      - Database__ConnectionString=Host=db;Port=5432;Database=paperless;Username=paperless;Password=paperless
+
+      # ── Hangfire ──────────────────────────────────────────────
+      # Section: Hangfire
+      # Hangfire shares the same PostgreSQL database (uses schema "hangfire")
+      - Hangfire__StorageProvider=PostgreSQL
+      - Hangfire__ConnectionString=Host=db;Port=5432;Database=paperless;Username=paperless;Password=paperless
+      - Hangfire__WorkerCount=5
+      - Hangfire__EnableDashboard=true
+
+      # ── Redis (distributed cache) ─────────────────────────────
+      # Section: Redis
+      - Redis__Configuration=redis:6379
+      - Redis__InstanceName=Paperless
+
+      # ── File storage ──────────────────────────────────────────
+      # Section: FileStorage
+      - FileStorage__BaseDirectory=/app/data
+
+      # ── External services ─────────────────────────────────────
+      # Gotenberg endpoint for PDF conversion
+      - Gotenberg__Endpoint=http://gotenberg:3000
+      # Tika endpoint for text extraction
+      - Tika__Endpoint=http://tika:9998
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  # ──────────────────────────────────────────────────────────────────
+  # db — PostgreSQL 16
+  # Primary database for domain entities, Hangfire storage, and
+  # optionally pgvector for AI embeddings.
+  # Ports: 5432 (internal only, exposed for dev tooling)
+  # ──────────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: paperless-db
+    restart: unless-stopped
+    shm_size: 256mb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: paperless
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paperless -d paperless"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  # ──────────────────────────────────────────────────────────────────
+  # redis — Redis 7 (Alpine)
+  # Used as:
+  #   - Distributed cache backend (IDistributedCache)
+  #   - Hangfire job dispatching backplane
+  #   - SignalR backplane (for WebSocket status updates)
+  # Ports: 6379 (internal only, exposed for dev tooling)
+  # ──────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: paperless-redis
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  # ──────────────────────────────────────────────────────────────────
+  # gotenberg — Gotenberg 8
+  # Document conversion service:
+  #   - HTML / Markdown → PDF
+  #   - Office documents (Word, Excel, PowerPoint) → PDF
+  #   - PDF/A generation and manipulation
+  #   - EML (email) → PDF conversion
+  # Ports: 3000 (internal)
+  # ──────────────────────────────────────────────────────────────────
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: paperless-gotenberg
+    restart: unless-stopped
+    # Disable JavaScript and restrict network access to local files
+    # for security. The chromium route is used to convert .eml files.
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  # ──────────────────────────────────────────────────────────────────
+  # tika — Apache Tika 3
+  # Text extraction service:
+  #   - Extracts text from PDF, DOCX, ODT, XLSX, PPTX, and many more
+  #   - Language detection
+  #   - Metadata extraction
+  # Ports: 9998 (internal)
+  # ──────────────────────────────────────────────────────────────────
+  tika:
+    image: apache/tika:3.0.0
+    container_name: paperless-tika
+    restart: unless-stopped
+    ports:
+      - "9998:9998"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9998/tika"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+# ──────────────────────────────────────────────────────────────────────
+# Named volumes
+# ──────────────────────────────────────────────────────────────────────
+volumes:
+  # Document storage: originals, archive PDFs, thumbnails, previews
+  data:
+    name: paperless_data
+  # Uploaded / temporary media files
+  media:
+    name: paperless_media
+  # PostgreSQL database files
+  pgdata:
+    name: paperless_pgdata
+  # Redis persistence
+  redisdata:
+    name: paperless_redisdata
