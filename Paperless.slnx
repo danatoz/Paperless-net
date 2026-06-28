@@ -1,7 +1,6 @@
 <Solution>
   <Folder Name="/src/">
     <File Path="ARCHITECTURE.md" />
-    <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
     <File Path="Paperless.slnx" />
     <File Path="README.md" />
