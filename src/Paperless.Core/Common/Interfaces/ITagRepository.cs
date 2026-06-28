@@ -1,3 +1,5 @@
+using Paperless.Core.Common.Models;
+using Paperless.Core.Common.Specifications;
 using Paperless.Core.Documents.Entities;
 
 namespace Paperless.Core.Common.Interfaces;
@@ -11,6 +13,12 @@ public interface ITagRepository
     /// Gets a tag by its unique identifier.
     /// </summary>
     Task<Tag?> GetByIdAsync(int id, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves a paginated, filtered, and sorted list of tags
+    /// using a specification.
+    /// </summary>
+    Task<PagedResult<Tag>> GetAllAsync(ISpecification<Tag> spec, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves all tags.

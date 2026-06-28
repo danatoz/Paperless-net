@@ -1,3 +1,5 @@
+using Paperless.Core.Common.Models;
+using Paperless.Core.Common.Specifications;
 using Paperless.Core.Documents.Entities;
 
 namespace Paperless.Core.Common.Interfaces;
@@ -11,6 +13,12 @@ public interface ICorrespondentRepository
     /// Gets a correspondent by its unique identifier.
     /// </summary>
     Task<Correspondent?> GetByIdAsync(int id, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves a paginated, filtered, and sorted list of correspondents
+    /// using a specification.
+    /// </summary>
+    Task<PagedResult<Correspondent>> GetAllAsync(ISpecification<Correspondent> spec, CancellationToken ct = default);
 
     /// <summary>
     /// Retrieves all correspondents.
