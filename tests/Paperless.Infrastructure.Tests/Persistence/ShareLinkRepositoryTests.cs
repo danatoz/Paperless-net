@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Paperless.Core.Documents.Entities;
 using Paperless.Infrastructure.Persistence.Repositories;
 
@@ -11,7 +12,7 @@ public class ShareLinkRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new ShareLinkRepository(context);
+        var repo = new ShareLinkRepository(context, CreateUnitOfWorkMock());
 
         var doc = new Document { Title = "Shared Doc", Checksum = "share1" };
         context.Documents.Add(doc);
@@ -40,7 +41,7 @@ public class ShareLinkRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new ShareLinkRepository(context);
+        var repo = new ShareLinkRepository(context, CreateUnitOfWorkMock());
 
         var doc = new Document { Title = "Slug Doc", Checksum = "slug1" };
         context.Documents.Add(doc);
@@ -68,7 +69,7 @@ public class ShareLinkRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new ShareLinkRepository(context);
+        var repo = new ShareLinkRepository(context, CreateUnitOfWorkMock());
 
         var doc1 = new Document { Title = "Doc1", Checksum = "d1s" };
         var doc2 = new Document { Title = "Doc2", Checksum = "d2s" };
@@ -94,7 +95,7 @@ public class ShareLinkRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new ShareLinkRepository(context);
+        var repo = new ShareLinkRepository(context, CreateUnitOfWorkMock());
 
         var bundle = new ShareLinkBundle
         {
@@ -119,7 +120,7 @@ public class ShareLinkRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new ShareLinkRepository(context);
+        var repo = new ShareLinkRepository(context, CreateUnitOfWorkMock());
 
         var doc = new Document { Title = "Delete Test", Checksum = "del-share" };
         context.Documents.Add(doc);
@@ -139,7 +140,10 @@ public class ShareLinkRepositoryTests : RepositoryTestsBase
         await context.SaveChangesAsync();
 
         // Assert
-        var deleted = await repo.GetByIdAsync(link.Id);
+        // Use IgnoreQueryFilters to verify the soft-delete record still exists in DB
+        var deleted = await context.ShareLinks
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(sl => sl.Id == link.Id);
         deleted.Should().NotBeNull();
         deleted!.IsDeleted.Should().BeTrue();
     }

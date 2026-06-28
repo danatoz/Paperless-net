@@ -13,7 +13,7 @@ public class MatchingModelRepositoriesTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new CorrespondentRepository(context);
+        var repo = new CorrespondentRepository(context, CreateUnitOfWorkMock());
 
         var entity = new Correspondent
         {
@@ -36,7 +36,7 @@ public class MatchingModelRepositoriesTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new CorrespondentRepository(context);
+        var repo = new CorrespondentRepository(context, CreateUnitOfWorkMock());
 
         var entity = new Correspondent { Name = "ToDelete", MatchingAlgorithm = MatchingAlgorithm.Auto };
         await repo.AddAsync(entity);
@@ -60,7 +60,7 @@ public class MatchingModelRepositoriesTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new TagRepository(context);
+        var repo = new TagRepository(context, CreateUnitOfWorkMock());
 
         var entity = new Tag
         {
@@ -86,7 +86,7 @@ public class MatchingModelRepositoriesTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentTypeRepository(context);
+        var repo = new DocumentTypeRepository(context, CreateUnitOfWorkMock());
 
         var entity = new DocumentType
         {
@@ -109,7 +109,7 @@ public class MatchingModelRepositoriesTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new StoragePathRepository(context);
+        var repo = new StoragePathRepository(context, CreateUnitOfWorkMock());
 
         var entity = new StoragePath
         {
@@ -134,7 +134,7 @@ public class MatchingModelRepositoriesTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new CustomFieldRepository(context);
+        var repo = new CustomFieldRepository(context, CreateUnitOfWorkMock());
 
         var entity = new CustomField
         {

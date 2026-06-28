@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Paperless.Core.Common.Interfaces;
 using Paperless.Core.Common.Models;
 using Paperless.Core.Common.Specifications;
 using Paperless.Core.Documents.Entities;
@@ -9,7 +10,8 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 
 /// <summary>
 /// Base repository class providing common CRUD and query operations
-/// using the Specification pattern.
+/// using the Specification pattern. Repositories use <see cref="IUnitOfWork"/>
+/// for persisting changes to ensure domain events are dispatched automatically.
 /// </summary>
 /// <typeparam name="T">The entity type, must inherit from <see cref="BaseEntity"/>.</typeparam>
 public abstract class RepositoryBase<T>
@@ -17,11 +19,13 @@ public abstract class RepositoryBase<T>
 {
     protected readonly AppDbContext DbContext;
     protected readonly DbSet<T> DbSet;
+    protected readonly IUnitOfWork UnitOfWork;
 
-    protected RepositoryBase(AppDbContext dbContext)
+    protected RepositoryBase(AppDbContext dbContext, IUnitOfWork unitOfWork)
     {
         DbContext = dbContext;
         DbSet = dbContext.Set<T>();
+        UnitOfWork = unitOfWork;
     }
 
     /// <summary>

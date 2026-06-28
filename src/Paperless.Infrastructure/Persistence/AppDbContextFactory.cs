@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Options;
+using Paperless.Infrastructure.Persistence.Interceptors;
 
 namespace Paperless.Infrastructure.Persistence;
 
@@ -21,6 +23,16 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
             ConnectionString = connectionString
         });
 
-        return new AppDbContext(optionsBuilder.Options, dbOptions);
+        // Design-time interceptors: SoftDeleteInterceptor has no dependencies;
+        // AuditInterceptor gracefully handles missing IHttpContextAccessor.
+        var httpContextAccessor = new HttpContextAccessor();
+        var softDeleteInterceptor = new SoftDeleteInterceptor();
+        var auditInterceptor = new AuditInterceptor(httpContextAccessor);
+
+        return new AppDbContext(
+            optionsBuilder.Options,
+            dbOptions,
+            softDeleteInterceptor,
+            auditInterceptor);
     }
 }

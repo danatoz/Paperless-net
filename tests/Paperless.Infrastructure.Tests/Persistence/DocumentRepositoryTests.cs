@@ -13,7 +13,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         var document = new Document
         {
@@ -36,7 +36,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         // Act
         var result = await repo.GetByIdAsync(999);
@@ -50,7 +50,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         var tag = new Tag { Name = "TestTag", MatchingAlgorithm = Core.Documents.Enums.MatchingAlgorithm.Auto };
         context.Tags.Add(tag);
@@ -81,7 +81,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         context.Documents.AddRange(
             new Document { Title = "Doc1", Checksum = "c1" },
@@ -102,7 +102,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         for (int i = 1; i <= 10; i++)
         {
@@ -132,7 +132,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         context.Documents.Add(new Document { Title = "Unique", Checksum = "unique-checksum-789" });
         await context.SaveChangesAsync();
@@ -150,7 +150,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         var document = new Document { Title = "ToDelete", Checksum = "del" };
         context.Documents.Add(document);
@@ -177,7 +177,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         context.Documents.AddRange(
             new Document { Title = "Invoice March", Content = "March invoice content", Checksum = "im" },
@@ -198,7 +198,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         context.Documents.AddRange(
             new Document { Title = "Doc1", Content = "Important memo about taxes", Checksum = "d1" },
@@ -219,7 +219,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         var corr = new Correspondent { Name = "ABC Corp", MatchingAlgorithm = Core.Documents.Enums.MatchingAlgorithm.Auto };
         context.Correspondents.Add(corr);
@@ -242,7 +242,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         var urgentTag = new Tag { Name = "Urgent", MatchingAlgorithm = Core.Documents.Enums.MatchingAlgorithm.Auto };
         var financeTag = new Tag { Name = "Finance", MatchingAlgorithm = Core.Documents.Enums.MatchingAlgorithm.Auto };
@@ -266,7 +266,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         for (int i = 1; i <= 5; i++)
         {
@@ -292,7 +292,7 @@ public class DocumentRepositoryTests : RepositoryTestsBase
     {
         // Arrange
         await using var context = CreateContext();
-        var repo = new DocumentRepository(context);
+        var repo = new DocumentRepository(context, CreateUnitOfWorkMock());
 
         var document = new Document { Title = "Original", Content = "Original content", Checksum = "chk" };
         context.Documents.Add(document);

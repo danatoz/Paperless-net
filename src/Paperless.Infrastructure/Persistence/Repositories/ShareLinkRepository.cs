@@ -10,7 +10,7 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 /// </summary>
 public class ShareLinkRepository : RepositoryBase<ShareLink>, IShareLinkRepository
 {
-    public ShareLinkRepository(AppDbContext dbContext) : base(dbContext)
+    public ShareLinkRepository(AppDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork)
     {
     }
 

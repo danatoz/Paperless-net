@@ -4,7 +4,7 @@ using Paperless.Core.Common.Interfaces;
 namespace Paperless.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Extension methods for registering Infrastructure services (repositories, etc.).
+/// Extension methods for registering Infrastructure services (repositories, UnitOfWork, etc.).
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -15,6 +15,9 @@ public static class ServiceCollectionExtensions
     /// <returns>The same service collection for chaining.</returns>
     public static IServiceCollection AddInfrastructureRepositories(this IServiceCollection services)
     {
+        // ── Unit of Work ───────────────────────────────────────────
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         // ── Document module repositories ────────────────────────────
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<ICorrespondentRepository, CorrespondentRepository>();

@@ -13,7 +13,7 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 /// </summary>
 public class DocumentRepository : RepositoryBase<Document>, IDocumentRepository
 {
-    public DocumentRepository(AppDbContext dbContext) : base(dbContext)
+    public DocumentRepository(AppDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork)
     {
     }
 

@@ -1,8 +1,11 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using Paperless.Core.Documents.Entities;
 using Paperless.Core.Mail.Entities;
 using Paperless.Core.Workflows.Entities;
+using Paperless.Infrastructure.Persistence.Interceptors;
 
 namespace Paperless.Infrastructure.Persistence;
 
@@ -10,15 +13,24 @@ namespace Paperless.Infrastructure.Persistence;
 /// Application EF Core DbContext. Registers all domain entity DbSets
 /// and applies entity configurations via the Fluent API.
 /// Supports both PostgreSQL and SQLite providers based on <see cref="DatabaseOptions"/>.
+/// Automatically applies soft-delete global query filters and audit interceptors.
 /// </summary>
 public class AppDbContext : DbContext
 {
     private readonly IOptions<DatabaseOptions> _dbOptions;
+    private readonly SoftDeleteInterceptor _softDeleteInterceptor;
+    private readonly AuditInterceptor _auditInterceptor;
 
-    public AppDbContext(DbContextOptions<AppDbContext> options, IOptions<DatabaseOptions> dbOptions)
+    public AppDbContext(
+        DbContextOptions<AppDbContext> options,
+        IOptions<DatabaseOptions> dbOptions,
+        SoftDeleteInterceptor softDeleteInterceptor,
+        AuditInterceptor auditInterceptor)
         : base(options)
     {
         _dbOptions = dbOptions;
+        _softDeleteInterceptor = softDeleteInterceptor;
+        _auditInterceptor = auditInterceptor;
     }
 
     // ── Document module entities ─────────────────────────────────────
@@ -133,8 +145,9 @@ public class AppDbContext : DbContext
         // Apply all entity configurations from the Configurations namespace
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-        // Apply the soft-delete global query filter for Document
-        modelBuilder.Entity<Document>().HasQueryFilter(x => !x.IsDeleted);
+        // Apply the soft-delete global query filter for all ISoftDeletable entities.
+        // This ensures soft-deleted records are automatically excluded from queries.
+        ApplySoftDeleteQueryFilter(modelBuilder);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -159,6 +172,33 @@ public class AppDbContext : DbContext
                         $"Unsupported database provider: '{dbOpts.Provider}'. " +
                         $"Supported values: 'PostgreSQL', 'SQLite'.");
             }
+        }
+
+        // Add persistence interceptors.
+        // When options are configured externally (via AddDbContext), interceptors
+        // are added there. This fallback covers design-time and auto-configuration.
+        optionsBuilder.AddInterceptors(_softDeleteInterceptor, _auditInterceptor);
+    }
+
+    /// <summary>
+    /// Applies the soft-delete global query filter (IsDeleted == false) to all entity types
+    /// that implement <see cref="ISoftDeletable"/>. This is done dynamically for every
+    /// entity in the model, so adding a new entity that implements <see cref="ISoftDeletable"/>
+    /// automatically gets the filter without additional configuration.
+    /// </summary>
+    private static void ApplySoftDeleteQueryFilter(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (!typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType))
+                continue;
+
+            var parameter = Expression.Parameter(entityType.ClrType, "e");
+            var property = Expression.Property(parameter, nameof(ISoftDeletable.IsDeleted));
+            var condition = Expression.Equal(property, Expression.Constant(false));
+            var lambda = Expression.Lambda(condition, parameter);
+
+            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
         }
     }
 }

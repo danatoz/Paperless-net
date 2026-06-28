@@ -9,7 +9,7 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 /// </summary>
 public class StoragePathRepository : RepositoryBase<StoragePath>, IStoragePathRepository
 {
-    public StoragePathRepository(AppDbContext dbContext) : base(dbContext)
+    public StoragePathRepository(AppDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork)
     {
     }
 }

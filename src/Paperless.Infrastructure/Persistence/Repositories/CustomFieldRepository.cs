@@ -9,7 +9,7 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 /// </summary>
 public class CustomFieldRepository : RepositoryBase<CustomField>, ICustomFieldRepository
 {
-    public CustomFieldRepository(AppDbContext dbContext) : base(dbContext)
+    public CustomFieldRepository(AppDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork)
     {
     }
 }

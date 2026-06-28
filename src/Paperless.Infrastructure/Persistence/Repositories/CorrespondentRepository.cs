@@ -9,7 +9,7 @@ namespace Paperless.Infrastructure.Persistence.Repositories;
 /// </summary>
 public class CorrespondentRepository : RepositoryBase<Correspondent>, ICorrespondentRepository
 {
-    public CorrespondentRepository(AppDbContext dbContext) : base(dbContext)
+    public CorrespondentRepository(AppDbContext dbContext, IUnitOfWork unitOfWork) : base(dbContext, unitOfWork)
     {
     }
 }
